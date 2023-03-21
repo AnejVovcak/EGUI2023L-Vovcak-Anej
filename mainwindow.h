@@ -31,9 +31,8 @@ private slots:
 private:
     void buildTree(QStandardItemModel *model, const QJsonObject &jsonObj, const QModelIndex &parentIndex = QModelIndex());
     void buildTree2(QStandardItemModel *model, const QJsonObject &jsonObj, const QModelIndex &parentIndex = QModelIndex());
-    void convertToModel();
-    QJsonObject buildObjectFromModel(QStandardItem *item);
-    QJsonArray buildArrayFromModel(QStandardItem *item);
+    QJsonObject modelToJson(QStandardItem *item);
+    void saveTree(QJsonObject& jsonObj, QStandardItem* item);
 
 private:
     Ui::MainWindow *ui;
