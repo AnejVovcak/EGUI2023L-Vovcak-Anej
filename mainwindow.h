@@ -4,6 +4,8 @@
 #include <QStandardItemModel>
 #include <QJsonObject>
 #include <QMainWindow>
+#include <QTreeView>
+#include <QAction>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -28,6 +30,10 @@ private slots:
 
     void on_actionactionNewNode_triggered();
 
+    void on_treeView_clicked(const QModelIndex &index);
+
+    void on_treeView_pressed(const QModelIndex &index);
+
 private:
     void buildTree(QStandardItemModel *model, const QJsonObject &jsonObj, const QModelIndex &parentIndex = QModelIndex());
     void buildTree2(QStandardItemModel *model, const QJsonObject &jsonObj, const QModelIndex &parentIndex = QModelIndex());
@@ -37,5 +43,13 @@ private:
 private:
     Ui::MainWindow *ui;
     QString file_path_;
+    QTreeView* treeView;
+    QAction* action_new_array_element;
+    QAction* action_new_object_element;
+    QAction* action_save;
+    QAction* action_save_as;
+    QAction* action_open;
+    QToolBar* toolbar;
+
 };
 #endif // MAINWINDOW_H

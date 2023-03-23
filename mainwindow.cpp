@@ -1,4 +1,6 @@
 #include "mainwindow.h"
+#include "qjsonarray.h"
+#include "qtoolbar.h"
 #include "ui_mainwindow.h"
 #include <QFile>
 #include <QFileDialog>
@@ -11,14 +13,16 @@
 #include <QJsonDocument>
 #include <QStandardItemModel>
 #include <QJsonObject>
-#include "qjsonmodel.h"
-
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    //treeView = new QTreeView(this);
+    action_new_array_element = ui->actionNewArray;
+    toolbar = ui->toolBar;
+    action_new_array_element->setEnabled(false);
 }
 
 MainWindow::~MainWindow()
@@ -246,5 +250,17 @@ void MainWindow::on_actionactionNewNode_triggered()
     rowItems << new QStandardItem("");
 
     selectedItem->appendRow(rowItems);
+
+}
+
+void MainWindow::on_treeView_clicked(const QModelIndex &index)
+{
+
+}
+
+
+void MainWindow::on_treeView_pressed(const QModelIndex &index)
+{
+    action_new_array_element->setEnabled(true);
 }
 

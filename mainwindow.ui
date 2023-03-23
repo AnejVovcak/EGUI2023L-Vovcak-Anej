@@ -51,9 +51,14 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionactionNewNode"/>
+   <addaction name="actiondeleteNode"/>
+   <addaction name="actionNewArray"/>
+   <addaction name="insert_array_element"/>
   </widget>
   <action name="actionOpen">
+   <property name="icon">
+    <iconset theme="address-book-new"/>
+   </property>
    <property name="text">
     <string>Open</string>
    </property>
@@ -73,9 +78,24 @@
     <string>New</string>
    </property>
   </action>
-  <action name="actionactionNewNode">
+  <action name="actionNewObject">
    <property name="text">
-    <string>actionNewNode</string>
+    <string>NewObject</string>
+   </property>
+  </action>
+  <action name="actiondeleteNode">
+   <property name="text">
+    <string>DeleteNode</string>
+   </property>
+  </action>
+  <action name="actionNewArray">
+   <property name="text">
+    <string>NewArray</string>
+   </property>
+  </action>
+  <action name="insert_array_element">
+   <property name="text">
+    <string>InsertArrayElement</string>
    </property>
   </action>
  </widget>
