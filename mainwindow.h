@@ -28,11 +28,9 @@ private slots:
 
     void on_actionNew_triggered();
 
-    void on_actionactionNewNode_triggered();
-
-    void on_treeView_clicked(const QModelIndex &index);
-
     void on_treeView_pressed(const QModelIndex &index);
+
+    void on_actionNewObject_triggered();
 
 private:
     void buildTree(QStandardItemModel *model, const QJsonObject &jsonObj, const QModelIndex &parentIndex = QModelIndex());
@@ -49,6 +47,7 @@ private:
     QAction* action_save;
     QAction* action_save_as;
     QAction* action_open;
+    QAction* action_delete_element;
     QToolBar* toolbar;
 
 };
