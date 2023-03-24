@@ -32,11 +32,18 @@ private slots:
 
     void on_actionNewObject_triggered();
 
+    void on_actiondeleteNode_triggered();
+
+    void on_treeView_viewportEntered();
+
+    void on_treeView_entered(const QModelIndex &index);
+
 private:
     void buildTree(QStandardItemModel *model, const QJsonObject &jsonObj, const QModelIndex &parentIndex = QModelIndex());
     void buildTree2(QStandardItemModel *model, const QJsonObject &jsonObj, const QModelIndex &parentIndex = QModelIndex());
     QJsonObject modelToJson(QStandardItem *item);
     void saveTree(QJsonObject& jsonObj, QStandardItem* item);
+    void saveTree2(QJsonArray& jsonArr, QStandardItem* item);
 
 private:
     Ui::MainWindow *ui;
@@ -49,6 +56,7 @@ private:
     QAction* action_open;
     QAction* action_delete_element;
     QToolBar* toolbar;
+    QStandardItemModel * model;
 
 };
 #endif // MAINWINDOW_H

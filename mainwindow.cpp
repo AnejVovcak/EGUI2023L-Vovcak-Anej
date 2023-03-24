@@ -20,7 +20,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     action_new_array_element = ui->actionNewArrayElement;
-    action_new_object_element = ui->actionNewObject;
+    action_new_object_element = ui->insert_object_element;
     action_save = ui->actionSave;
     action_save_as = ui->actionSave_as;
     action_delete_element = ui->actiondeleteNode;
@@ -28,9 +28,10 @@ MainWindow::MainWindow(QWidget *parent)
     toolbar = ui->toolBar;
     action_new_array_element->setEnabled(false);
     action_new_object_element->setEnabled(false);
-    //action_save->setEnabled(false);
-    //action_save_as->setEnabled(false);
-    //action_delete_element->setEnabled(false);
+    action_save->setEnabled(false);
+    action_save_as->setEnabled(false);
+    action_delete_element->setEnabled(false);
+    model = dynamic_cast<QStandardItemModel*>(ui->treeView->model());
 }
 
 MainWindow::~MainWindow(){
@@ -103,6 +104,7 @@ void MainWindow::on_actionSave_triggered()
     }
 }
 
+/*
 void MainWindow::saveTree(QJsonObject& jsonObj, QStandardItem* item)
 {
     for(int i = 0; i<item->rowCount(); i++){
@@ -116,7 +118,59 @@ void MainWindow::saveTree(QJsonObject& jsonObj, QStandardItem* item)
             jsonObj.insert(childItem->text(), nestedObj);
         }
     }
+}*/
+
+void MainWindow::saveTree2(QJsonArray& jsonArr, QStandardItem* item)
+{
+
+    for(int i = 0; i<item->rowCount(); i++){
+        QStandardItem* childItem = item->child(i, 0);
+        if(childItem->rowCount() == 0){
+            QJsonObject jsonObject;
+            jsonObject.insert(childItem->text(), item->child(i, 1)->text());
+        }
+        else if(childItem->data(Qt::UserRole) == "array"){
+            QJsonArray nestedArr;
+            saveTree2(nestedArr, childItem);
+            QJsonObject jsonObject;
+            jsonObject.insert(childItem->text(), nestedArr);
+            jsonArr.append(jsonObject);
+        }
+        else{
+            QJsonObject nestedObj;
+            saveTree(nestedObj, childItem);
+            QJsonObject jsonObject;
+            jsonObject.insert(childItem->text(), nestedObj);
+            jsonArr.append(jsonObject);
+        }
+    }
 }
+
+
+void MainWindow::saveTree(QJsonObject& jsonObj, QStandardItem* item)
+{
+    for(int i = 0; i<item->rowCount(); i++){
+        QStandardItem* childItem = item->child(i, 0);
+
+        if(childItem->rowCount() == 0){
+            jsonObj.insert(childItem->text(), item->child(i, 1)->text());
+        }
+        else if(childItem->data(Qt::UserRole) == "array"){
+            QJsonArray nestedArray;
+            saveTree2(nestedArray,childItem);
+            qDebug() << nestedArray;
+            //jsonObj.insert(childItem->text(), nestedArray);
+            jsonObj[childItem->text()] = nestedArray;
+        }
+        else{
+            QJsonObject nestedObj;
+            saveTree(nestedObj, childItem);
+            jsonObj.insert(childItem->text(), nestedObj);
+        }
+    }
+}
+
+
 
 void MainWindow::on_actionSave_as_triggered()
 {
@@ -179,6 +233,7 @@ void MainWindow::buildTree(QStandardItemModel *model, const QJsonObject &jsonObj
         if (value.typeId() == QMetaType::QVariantMap) {
             QJsonObject nestedObj = value.toJsonObject();
             QStandardItem *item = new QStandardItem(key);
+            item->setData("object", Qt::UserRole);
             if (parentIndex.isValid()) {
                 model->itemFromIndex(parentIndex)->appendRow(item);
             } else {
@@ -188,6 +243,7 @@ void MainWindow::buildTree(QStandardItemModel *model, const QJsonObject &jsonObj
         } else if (value.typeId() == QMetaType::QVariantList) {
             QJsonArray array = value.toJsonArray();
             QStandardItem *item = new QStandardItem(key);
+            item->setData("array", Qt::UserRole);
             if (parentIndex.isValid()) {
                 model->itemFromIndex(parentIndex)->appendRow(item);
             } else {
@@ -213,24 +269,39 @@ void MainWindow::buildTree(QStandardItemModel *model, const QJsonObject &jsonObj
 
 void MainWindow::on_treeView_pressed(const QModelIndex &index)
 {
-    /*
+
     bool isValueWithObjectChild = false;
+    bool isValueValid = false;
 
     // Check if the clicked item is a value with an object child
     if (index.isValid()) {
-        QStandardItem *clickedItem = dynamic_cast<QStandardItemModel*>(treeView->model())->itemFromIndex(index);
-        if (clickedItem->columnCount() == 2 && clickedItem->child(0, 0) != nullptr && clickedItem->child(0, 0)->rowCount() > 0) {
+        isValueValid = true;
+
+        QStandardItem *clickedItem = dynamic_cast<QStandardItemModel*>(ui->treeView->model())->itemFromIndex(index);
+        if (clickedItem != nullptr && clickedItem->rowCount() > 0) {
             isValueWithObjectChild = true;
         }
-    }
 
+    }
     // Enable the add action if the clicked item is not a value with an object child
-    if (!isValueWithObjectChild) {
+    if (isValueWithObjectChild) {
         action_new_array_element->setEnabled(true);
         action_new_object_element->setEnabled(true);
-        action_delete_element->setEnabled(true);
+    }else {
+        action_new_array_element->setEnabled(false);
+        action_new_object_element->setEnabled(false);
     }
-    */
+
+    if(isValueValid){
+        action_delete_element->setEnabled(true);
+        action_save->setEnabled(true);
+        action_save_as -> setEnabled(true);
+    }else{
+        action_delete_element->setEnabled(false);
+        action_save->setEnabled(false);
+        action_save_as -> setEnabled(false);
+    }
+
 }
 
 
@@ -247,5 +318,39 @@ void MainWindow::on_actionNewObject_triggered()
     rowItems << new QStandardItem("");
 
     selectedItem->appendRow(rowItems);
+}
+
+
+void MainWindow::on_actiondeleteNode_triggered()
+{
+    QTreeView* treeView = ui->treeView;
+    QStandardItemModel* model = dynamic_cast<QStandardItemModel*>(treeView->model());
+
+    QModelIndex selectedIndex = treeView->currentIndex();
+    QStandardItem* selectedItem = model->itemFromIndex(selectedIndex);
+
+        // Check if the selected item is valid
+        if (!selectedItem)
+            return;
+
+        // Get the parent item of the selected item
+        QStandardItem* parentItem = selectedItem->parent();
+        if (!parentItem)
+            parentItem = model->invisibleRootItem();
+
+        // Remove the selected item and its children
+        parentItem->removeRow(selectedIndex.row());
+}
+
+
+void MainWindow::on_treeView_viewportEntered()
+{
+    qDebug()<<"testes";
+}
+
+
+void MainWindow::on_treeView_entered(const QModelIndex &index)
+{
+    qDebug()<<"sssssss";
 }
 
