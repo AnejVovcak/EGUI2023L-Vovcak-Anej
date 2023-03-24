@@ -122,28 +122,33 @@ void MainWindow::saveTree(QJsonObject& jsonObj, QStandardItem* item)
 
 void MainWindow::saveTree2(QJsonArray& jsonArr, QStandardItem* item)
 {
+    QJsonObject jsonObject1;
 
     for(int i = 0; i<item->rowCount(); i++){
         QStandardItem* childItem = item->child(i, 0);
         if(childItem->rowCount() == 0){
             QJsonObject jsonObject;
-            jsonObject.insert(childItem->text(), item->child(i, 1)->text());
+            jsonObject1.insert(childItem->text(), item->child(i, 1)->text());
+            //jsonArr.append(jsonObject);
         }
         else if(childItem->data(Qt::UserRole) == "array"){
             QJsonArray nestedArr;
             saveTree2(nestedArr, childItem);
             QJsonObject jsonObject;
-            jsonObject.insert(childItem->text(), nestedArr);
-            jsonArr.append(jsonObject);
+            jsonObject1.insert(childItem->text(), nestedArr);
+            //jsonArr.append(jsonObject);
         }
         else{
             QJsonObject nestedObj;
             saveTree(nestedObj, childItem);
             QJsonObject jsonObject;
-            jsonObject.insert(childItem->text(), nestedObj);
-            jsonArr.append(jsonObject);
+            jsonObject1.insert(childItem->text(), nestedObj);
+            //jsonArr.append(jsonObject);
         }
+
     }
+    jsonArr.append(jsonObject1);
+
 }
 
 
