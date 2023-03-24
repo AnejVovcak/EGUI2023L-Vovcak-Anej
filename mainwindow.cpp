@@ -37,7 +37,6 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow(){
     delete treeView;
     delete action_new_array_element;
-    delete action_new_array_element;
     delete action_save;
     delete action_save_as;
     delete action_open;
@@ -104,22 +103,6 @@ void MainWindow::on_actionSave_triggered()
     }
 }
 
-/*
-void MainWindow::saveTree(QJsonObject& jsonObj, QStandardItem* item)
-{
-    for(int i = 0; i<item->rowCount(); i++){
-        QStandardItem* childItem = item->child(i, 0);
-        if(childItem->rowCount() == 0){
-            jsonObj.insert(childItem->text(), item->child(i, 1)->text());
-        }
-        else{
-            QJsonObject nestedObj;
-            saveTree(nestedObj, childItem);
-            jsonObj.insert(childItem->text(), nestedObj);
-        }
-    }
-}*/
-
 void MainWindow::saveTree2(QJsonArray& jsonArr, QStandardItem* item)
 {
     QJsonObject jsonObject1;
@@ -129,21 +112,18 @@ void MainWindow::saveTree2(QJsonArray& jsonArr, QStandardItem* item)
         if(childItem->rowCount() == 0){
             QJsonObject jsonObject;
             jsonObject1.insert(childItem->text(), item->child(i, 1)->text());
-            //jsonArr.append(jsonObject);
         }
         else if(childItem->data(Qt::UserRole) == "array"){
             QJsonArray nestedArr;
             saveTree2(nestedArr, childItem);
             QJsonObject jsonObject;
             jsonObject1.insert(childItem->text(), nestedArr);
-            //jsonArr.append(jsonObject);
         }
         else{
             QJsonObject nestedObj;
             saveTree(nestedObj, childItem);
             QJsonObject jsonObject;
             jsonObject1.insert(childItem->text(), nestedObj);
-            //jsonArr.append(jsonObject);
         }
 
     }
@@ -164,7 +144,6 @@ void MainWindow::saveTree(QJsonObject& jsonObj, QStandardItem* item)
             QJsonArray nestedArray;
             saveTree2(nestedArray,childItem);
             qDebug() << nestedArray;
-            //jsonObj.insert(childItem->text(), nestedArray);
             jsonObj[childItem->text()] = nestedArray;
         }
         else{
@@ -217,7 +196,8 @@ void MainWindow::on_actionNew_triggered()
     // Create a standard item model from the JSON object
     QStandardItemModel *model = new QStandardItemModel(this);
     buildTree(model, jsonObj, QModelIndex());
-
+    model->setHeaderData(0, Qt::Horizontal, QObject::tr("Key"));
+    model->setHeaderData(1, Qt::Horizontal, QObject::tr("Value"));
     // Set the model in the tree view
     ui->treeView->setModel(model);
 
@@ -345,17 +325,5 @@ void MainWindow::on_actiondeleteNode_triggered()
 
         // Remove the selected item and its children
         parentItem->removeRow(selectedIndex.row());
-}
-
-
-void MainWindow::on_treeView_viewportEntered()
-{
-    qDebug()<<"testes";
-}
-
-
-void MainWindow::on_treeView_entered(const QModelIndex &index)
-{
-    qDebug()<<"sssssss";
 }
 

@@ -17,6 +17,12 @@ set(PROJECT_SOURCES
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
+        dialoginsert.h
+        dialoginsert.cpp
+        dialoginsert.ui
+        dialoginsertobject.h
+        dialoginsertobject.cpp
+        dialoginsertobject.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
