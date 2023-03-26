@@ -87,7 +87,7 @@ void MainWindow::on_actionSave_triggered()
     QJsonObject jsonObj;
     saveTree(jsonObj, model->invisibleRootItem());
     //jsonObj = modelToJson(model->invisibleRootItem());
-    qDebug()<<jsonObj;
+    //qDebug()<<jsonObj;
 
     QJsonDocument document;
     document.setObject( jsonObj );
@@ -103,31 +103,30 @@ void MainWindow::on_actionSave_triggered()
     }
 }
 
+
 void MainWindow::saveTree2(QJsonArray& jsonArr, QStandardItem* item)
 {
-    QJsonObject jsonObject1;
+    QJsonObject jsonObject;
 
     for(int i = 0; i<item->rowCount(); i++){
         QStandardItem* childItem = item->child(i, 0);
+
         if(childItem->rowCount() == 0){
-            QJsonObject jsonObject;
-            jsonObject1.insert(childItem->text(), item->child(i, 1)->text());
+            jsonObject.insert(childItem->text(), item->child(i, 1)->text());
         }
         else if(childItem->data(Qt::UserRole) == "array"){
             QJsonArray nestedArr;
             saveTree2(nestedArr, childItem);
-            QJsonObject jsonObject;
-            jsonObject1.insert(childItem->text(), nestedArr);
+            jsonObject.insert(childItem->text(), nestedArr);
         }
         else{
             QJsonObject nestedObj;
             saveTree(nestedObj, childItem);
-            QJsonObject jsonObject;
-            jsonObject1.insert(childItem->text(), nestedObj);
+            jsonObject.insert(childItem->text(), nestedObj);
         }
 
     }
-    jsonArr.append(jsonObject1);
+    jsonArr.append(jsonObject);
 
 }
 
@@ -143,7 +142,6 @@ void MainWindow::saveTree(QJsonObject& jsonObj, QStandardItem* item)
         else if(childItem->data(Qt::UserRole) == "array"){
             QJsonArray nestedArray;
             saveTree2(nestedArray,childItem);
-            qDebug() << nestedArray;
             jsonObj[childItem->text()] = nestedArray;
         }
         else{
@@ -235,8 +233,32 @@ void MainWindow::buildTree(QStandardItemModel *model, const QJsonObject &jsonObj
                 model->appendRow(item);
             }
             for (int i = 0; i < array.size(); i++) {
-                QJsonObject nestedObj = array[i].toObject();
-                buildTree(model, nestedObj, item->index());
+
+                QJsonValue element = array.at(i);
+                if (element.isObject()) {
+                    QJsonObject nestedObj = element.toObject();
+                    buildTree(model, nestedObj, item->index());
+                } else if (element.isDouble() || element.isBool()) {
+                    QVariant value = element.toVariant();
+                    QList<QStandardItem*> rowItems;
+                    rowItems << new QStandardItem("");
+                    rowItems << new QStandardItem(value.toString());
+                    if (parentIndex.isValid()) {
+                        item->appendRow(rowItems);
+                    } else {
+                        model->appendRow(rowItems);
+                    }
+                } else {
+                    QString value = element.toString();
+                    QList<QStandardItem*> rowItems;
+                    rowItems << new QStandardItem("");
+                    rowItems << new QStandardItem(value);
+                    if (parentIndex.isValid()) {
+                        item->appendRow(rowItems);
+                    } else {
+                        model->appendRow(rowItems);
+                    }
+                }
             }
         } else {
             QList<QStandardItem*> rowItems;
