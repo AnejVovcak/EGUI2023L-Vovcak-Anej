@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "dialoginsertobject.h"
 #include "qjsonarray.h"
 #include "qtoolbar.h"
 #include "ui_mainwindow.h"
@@ -312,22 +313,6 @@ void MainWindow::on_treeView_pressed(const QModelIndex &index)
 }
 
 
-void MainWindow::on_actionNewObject_triggered()
-{
-    QTreeView* treeView = ui->treeView;
-    QStandardItemModel* model = dynamic_cast<QStandardItemModel*>(treeView->model());
-
-    QModelIndex selectedIndex = treeView->currentIndex();
-    QStandardItem* selectedItem = model->itemFromIndex(selectedIndex);
-
-    QList<QStandardItem*> rowItems;
-    rowItems << new QStandardItem("");
-    rowItems << new QStandardItem("");
-
-    selectedItem->appendRow(rowItems);
-}
-
-
 void MainWindow::on_actiondeleteNode_triggered()
 {
     QTreeView* treeView = ui->treeView;
@@ -347,5 +332,63 @@ void MainWindow::on_actiondeleteNode_triggered()
 
         // Remove the selected item and its children
         parentItem->removeRow(selectedIndex.row());
+}
+
+
+void MainWindow::on_insert_object_element_triggered()
+{
+
+        qDebug() << "test";
+        QTreeView* treeView = ui->treeView;
+        QStandardItemModel* model = dynamic_cast<QStandardItemModel*>(treeView->model());
+
+        QModelIndex selectedIndex = treeView->currentIndex();
+        QStandardItem* selectedItem = model->itemFromIndex(selectedIndex);
+
+        qDebug() << selectedItem->text();
+        qDebug() << selectedItem->data(Qt::UserRole);
+
+        // Create a new dialog to get user input
+        dialogInsertObject = new DialogInsertObject(this);
+        dialogInsertObject->show();
+
+        int result = dialogInsertObject->exec();
+
+        // If the user clicked OK, add the new object to the model
+        if (result == QDialog::Accepted) {
+
+            // Get the user's input from the dialog
+            QString key = dialogInsertObject->getKey();
+            QString value = dialogInsertObject->getValue();
+
+            // Create a new item for the object
+            QStandardItem *item = new QStandardItem(key);
+            item->setData("object", Qt::UserRole);
+
+            // If the user selected an item in the tree, add the new item as a child
+            // of that item. Otherwise, add it as a top-level item.
+            if (selectedItem->data(Qt::UserRole) == "array") {
+                /*
+                QList<QStandardItem*> rowItems;
+                rowItems << item;
+                rowItems << new QStandardItem(value);
+                selectedItem->appendRow(rowItems);*/
+                QStandardItem *item = new QStandardItem("");
+                QJsonObject obj;
+                obj.insert(key, value);
+                item->setData(obj, Qt::UserRole);
+                selectedItem->appendRow(item);
+            }
+            if (selectedItem->data(Qt::UserRole) == "object") {
+                QList<QStandardItem*> rowItems;
+                rowItems << item;
+                rowItems << new QStandardItem(value);
+                selectedItem->appendRow(rowItems);
+            }
+        }
+        // Clean up the dialog
+        delete dialogInsertObject;
+        dialogInsertObject = nullptr;
+
 }
 

@@ -73,11 +73,6 @@
     <string>New</string>
    </property>
   </action>
-  <action name="actionNewObject">
-   <property name="text">
-    <string>NewObject</string>
-   </property>
-  </action>
   <action name="actiondeleteNode">
    <property name="text">
     <string>DeleteNode</string>

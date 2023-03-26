@@ -1,11 +1,13 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
+#include "dialoginsertobject.h"
 #include <QJsonDocument>
 #include <QStandardItemModel>
 #include <QJsonObject>
 #include <QMainWindow>
 #include <QTreeView>
 #include <QAction>
+#include <ui_dialoginsertobject.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -30,9 +32,9 @@ private slots:
 
     void on_treeView_pressed(const QModelIndex &index);
 
-    void on_actionNewObject_triggered();
-
     void on_actiondeleteNode_triggered();
+
+    void on_insert_object_element_triggered();
 
 private:
     void buildTree(QStandardItemModel *model, const QJsonObject &jsonObj, const QModelIndex &parentIndex = QModelIndex());
@@ -53,6 +55,7 @@ private:
     QAction* action_delete_element;
     QToolBar* toolbar;
     QStandardItemModel * model;
+    DialogInsertObject *dialogInsertObject;
 
 };
 #endif // MAINWINDOW_H
