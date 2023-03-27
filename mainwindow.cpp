@@ -86,11 +86,11 @@ void MainWindow::on_actionOpen_triggered()
 void MainWindow::on_actionSave_triggered()
 {
     QStandardItemModel *model = qobject_cast<QStandardItemModel*>(ui->treeView->model());
-    //QJsonObject jsonObj = saveTree(model->invisibleRootItem());
+    QJsonObject jsonObj = saveTree(model->invisibleRootItem());
     //jsonObj = modelToJson(model->invisibleRootItem());
     //qDebug()<<jsonObj;
-    QJsonObject jsonObj;
-    saveTree(jsonObj,model->invisibleRootItem());
+    //QJsonObject jsonObj;
+    //saveTree(jsonObj,model->invisibleRootItem());
 
     QJsonDocument document;
     document.setObject( jsonObj );
@@ -141,11 +141,6 @@ void MainWindow::saveTree(QJsonObject& jsonObj, QStandardItem* item)
         if(childItem->rowCount() == 0){
             jsonObj.insert(childItem->text(), item->child(i, 1)->text());
         }
-        else if(childItem->data(Qt::UserRole) == "array"){
-            QJsonArray nestedArray;
-            saveTree2(nestedArray,childItem);
-            jsonObj[childItem->text()] = nestedArray;
-        }
         else{
             QJsonObject nestedObj;
             saveTree(nestedObj, childItem);
@@ -154,7 +149,7 @@ void MainWindow::saveTree(QJsonObject& jsonObj, QStandardItem* item)
     }
 }
 
-/*
+
 QJsonObject MainWindow::saveTree(QStandardItem* item)
 {
     QJsonObject result;
@@ -163,12 +158,14 @@ QJsonObject MainWindow::saveTree(QStandardItem* item)
     for (int i = 0; i < item->rowCount(); i++) {
         QStandardItem* childItem = item->child(i, 0);
 
-        if(childItem->rowCount() == 0){
+        if(childItem->rowCount() == 0 && childItem->text()!=""){
             result[childItem->text()] = item->child(i, 1)->text();
         }
         // Check if the child item represents a JSON object
         else if (childItem->data(Qt::UserRole).toString() == "object") {
-            QJsonObject childObj = saveTree(childItem);
+            //QJsonObject childObj = saveTree(childItem);
+            QJsonObject childObj;
+            saveTree(childObj, childItem);
             result[childItem->text()] = childObj;
         }
         // Check if the child item represents a JSON array
@@ -179,33 +176,27 @@ QJsonObject MainWindow::saveTree(QStandardItem* item)
 
                 // Check if the sub-child item represents a JSON object or array
                 if (subChildItem->data(Qt::UserRole).toString() == "object") {
-                    QJsonObject subChildObj = saveTree(subChildItem);
-                    childArr.append(subChildObj);
-                } else if (subChildItem->data(Qt::UserRole).toString() == "array") {
-                    QJsonArray subChildArr;
-                    for (int k = 0; k < subChildItem->rowCount(); k++) {
-                        QStandardItem* subSubChildItem = subChildItem->child(k, 1);
-                        QString value = subSubChildItem->text();
-                        QJsonValue jsonValue(value);
-                        subChildArr.append(jsonValue);
-                    }
-                    childArr.append(subChildArr);
+                    QJsonObject childObj;
+                    saveTree(childObj, subChildItem);
+                    QJsonObject newObject;
+                    newObject.insert(subChildItem->text(),childObj);
+                    childArr.append(newObject);
+                }else if(subChildItem->rowCount() == 0 && subChildItem->text()!=""){
+                    QJsonObject childObj;
+                    childObj[subChildItem->text()] = subChildItem->child(i, 1)->text();
+                    childArr.append(childObj);
                 } else {
-                    result.insert(childItem->text(), item->child(i, 1)->text());
-
-                    QString value = subChildItem->child(1, 0)->text();
+                    //result.insert(childItem->text(), item->child(i, 1)->text());
+                    //QString value = subChildItem->child(i, 1)->text();
+                    QString value = childItem->child(j, 1)->text();
                     QJsonValue jsonValue(value);
                     childArr.append(jsonValue);
                 }
             }
             result[childItem->text()] = childArr;
         }
-        else if(childItem->rowCount() == 0){
-            result.insert(childItem->text(), item->child(i, 1)->text());
-        }
         // Otherwise, the child item represents a key-value pair
         else {
-
             QString key = childItem->text();
             QString value = childItem->child(1, 0)->text();
             QJsonValue jsonValue(value);
@@ -216,7 +207,6 @@ QJsonObject MainWindow::saveTree(QStandardItem* item)
     return result;
 }
 
-*/
 void MainWindow::on_actionSave_as_triggered()
 {
     QString file_name = QFileDialog::getSaveFileName(this, tr("Save JSON File"), QString(), tr("JSON Files (*.json)"));
@@ -306,21 +296,25 @@ void MainWindow::buildTree(QStandardItemModel *model, const QJsonObject &jsonObj
                     QList<QStandardItem*> rowItems;
                     rowItems << new QStandardItem("");
                     rowItems << new QStandardItem(value.toString());
+                    /*
                     if (parentIndex.isValid()) {
                         item->appendRow(rowItems);
                     } else {
                         model->appendRow(rowItems);
-                    }
+                    }*/
+                    item->appendRow(rowItems);
                 } else {
                     QString value = element.toString();
                     QList<QStandardItem*> rowItems;
                     rowItems << new QStandardItem("");
                     rowItems << new QStandardItem(value);
+                    /*
                     if (parentIndex.isValid()) {
                         item->appendRow(rowItems);
                     } else {
                         model->appendRow(rowItems);
-                    }
+                    }*/
+                    item->appendRow(rowItems);
                 }
             }
         } else {
@@ -472,16 +466,11 @@ void MainWindow::on_insert_object_element_triggered()
 
 void MainWindow::on_actionModifyElement_triggered()
 {
-    qDebug() << "test";
-
     QTreeView* treeView = ui->treeView;
     QStandardItemModel* model = dynamic_cast<QStandardItemModel*>(treeView->model());
 
     QModelIndex selectedIndex = treeView->currentIndex();
     QStandardItem* selectedItem = model->itemFromIndex(selectedIndex);
-
-
-    qDebug() << selectedItem->data(Qt::UserRole);
 
     // Create a new dialog to get user input
     dialogModify = new DialogModify(this,model,selectedItem);
@@ -492,8 +481,6 @@ void MainWindow::on_actionModifyElement_triggered()
     if (result == QDialog::Accepted) {
         ui->treeView->setModel(dialogModify->getNewModal());
     }
-
-    qDebug()<<result;
 
     delete dialogModify;
     dialogModify = nullptr;
