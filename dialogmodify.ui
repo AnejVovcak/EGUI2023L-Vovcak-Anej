@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DialogInsert</class>
- <widget class="QDialog" name="DialogInsert">
+ <class>DialogModify</class>
+ <widget class="QDialog" name="DialogModify">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -32,7 +32,7 @@
   <widget class="QTreeView" name="treeView">
    <property name="geometry">
     <rect>
-     <x>70</x>
+     <x>80</x>
      <y>30</y>
      <width>256</width>
      <height>192</height>
@@ -45,7 +45,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>DialogInsert</receiver>
+   <receiver>DialogModify</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -61,7 +61,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>DialogInsert</receiver>
+   <receiver>DialogModify</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

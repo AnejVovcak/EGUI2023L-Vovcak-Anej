@@ -23,6 +23,12 @@ set(PROJECT_SOURCES
         dialoginsertobject.h
         dialoginsertobject.cpp
         dialoginsertobject.ui
+        dialoginsertarray.h
+        dialoginsertarray.cpp
+        dialoginsertarray.ui
+        dialogmodify.cpp
+        dialogmodify.h
+        dialogmodify.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

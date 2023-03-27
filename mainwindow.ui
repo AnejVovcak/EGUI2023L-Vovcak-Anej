@@ -57,6 +57,7 @@
    <addaction name="actionNew"/>
    <addaction name="insert_object_element"/>
    <addaction name="actiondeleteNode"/>
+   <addaction name="actionModifyElement"/>
   </widget>
   <action name="actionSave">
    <property name="text">
@@ -94,6 +95,11 @@
   <action name="actionOpen">
    <property name="text">
     <string>Open</string>
+   </property>
+  </action>
+  <action name="actionModifyElement">
+   <property name="text">
+    <string>ModifyElement</string>
    </property>
   </action>
  </widget>
