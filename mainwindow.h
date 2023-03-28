@@ -1,5 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
+#include "dialoginsertarray.h"
 #include "dialoginsertobject.h"
 #include "dialogmodify.h"
 #include <QJsonDocument>
@@ -40,6 +41,10 @@ private slots:
 
     void on_actionModifyElement_triggered();
 
+    void on_actionNewArrayElement_triggered();
+
+    void on_actionInsertValueElement_triggered();
+
 private:
     void buildTree(QStandardItemModel *model, const QJsonObject &jsonObj, const QModelIndex &parentIndex = QModelIndex());
     void buildTree2(QStandardItemModel *model, const QJsonObject &jsonObj, const QModelIndex &parentIndex = QModelIndex());
@@ -59,10 +64,12 @@ private:
     QAction* action_open;
     QAction* action_delete_element;
     QAction* action_modify;
+    QAction* action_new_value_element;
     QToolBar* toolbar;
     QStandardItemModel * model;
     DialogInsertObject *dialogInsertObject;
     DialogModify *dialogModify;
+    DialogInsertArray *dialogInsertArray;
 
 };
 #endif // MAINWINDOW_H

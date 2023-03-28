@@ -58,6 +58,8 @@
    <addaction name="insert_object_element"/>
    <addaction name="actiondeleteNode"/>
    <addaction name="actionModifyElement"/>
+   <addaction name="actionNewArrayElement"/>
+   <addaction name="actionInsertValueElement"/>
   </widget>
   <action name="actionSave">
    <property name="text">
@@ -81,7 +83,7 @@
   </action>
   <action name="actionNewArrayElement">
    <property name="text">
-    <string>NewArrayElement</string>
+    <string>InsertArrayElement</string>
    </property>
   </action>
   <action name="insert_object_element">
@@ -100,6 +102,11 @@
   <action name="actionModifyElement">
    <property name="text">
     <string>ModifyElement</string>
+   </property>
+  </action>
+  <action name="actionInsertValueElement">
+   <property name="text">
+    <string>InsertValueElement</string>
    </property>
   </action>
  </widget>
