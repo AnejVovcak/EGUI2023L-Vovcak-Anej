@@ -51,6 +51,9 @@
    <property name="text">
     <string>string</string>
    </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
   </widget>
   <widget class="QRadioButton" name="double_value">
    <property name="geometry">
