@@ -23,6 +23,7 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    void buildTree(QStandardItemModel *model, const QJsonObject &jsonObj, const QModelIndex &parentIndex = QModelIndex());
 
 private slots:
     void on_actionOpen_triggered();
@@ -45,8 +46,10 @@ private slots:
 
     void on_actionInsertValueElement_triggered();
 
+    void checkModelEmpty();
+
 private:
-    void buildTree(QStandardItemModel *model, const QJsonObject &jsonObj, const QModelIndex &parentIndex = QModelIndex());
+    //void buildTree(QStandardItemModel *model, const QJsonObject &jsonObj, const QModelIndex &parentIndex = QModelIndex());
     void buildTree2(QStandardItemModel *model, const QJsonObject &jsonObj, const QModelIndex &parentIndex = QModelIndex());
     QJsonObject modelToJson(QStandardItem *item);
     void saveTree(QJsonObject& jsonObj, QStandardItem* item);
@@ -70,6 +73,7 @@ private:
     DialogInsertObject *dialogInsertObject;
     DialogModify *dialogModify;
     DialogInsertArray *dialogInsertArray;
+    //void checkModelEmpty();
 
 };
 #endif // MAINWINDOW_H
