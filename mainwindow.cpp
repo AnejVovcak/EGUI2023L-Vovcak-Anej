@@ -101,12 +101,13 @@ void MainWindow::on_actionOpen_triggered()
     model->setHeaderData(1, Qt::Horizontal, QObject::tr("Value"));
 
     ui->treeView->setModel(model);
-
+    ui->treeView->expandAll();
     file.close();
 
     action_modify->setEnabled(false);
-    //action_new_array_element->setEnabled(false);
+    action_new_array_element->setEnabled(false);
     action_new_object_element->setEnabled(false);
+    action_new_value_element->setEnabled(false);
     action_save->setEnabled(false);
     action_save_as->setEnabled(false);
     action_delete_element->setEnabled(false);
@@ -116,10 +117,7 @@ void MainWindow::on_actionSave_triggered()
 {
     QStandardItemModel *model = qobject_cast<QStandardItemModel*>(ui->treeView->model());
     QJsonObject jsonObj = saveTree(model->invisibleRootItem());
-    //jsonObj = modelToJson(model->invisibleRootItem());
     qDebug()<<jsonObj;
-    //QJsonObject jsonObj;
-    //saveTree(jsonObj,model->invisibleRootItem());
 
     QJsonDocument document;
     document.setObject( jsonObj );
@@ -313,13 +311,15 @@ void MainWindow::on_actionNew_triggered()
     // Expand the tree view to show the root item
     ui->treeView->expand(model->index(0, 0, QModelIndex()));
 
-
+    file_path_ = "";
     action_modify->setEnabled(true);
     action_save_as -> setEnabled(true);
     action_save->setEnabled(file_path_!="");
     action_delete_element->setEnabled(false);
     action_new_object_element->setEnabled(true);
     action_new_array_element->setEnabled(true);
+    action_modify -> setEnabled(false);
+    action_new_value_element->setEnabled(false);
 }
 
 
@@ -419,29 +419,21 @@ void MainWindow::on_treeView_pressed(const QModelIndex &index)
 
         action_save_as -> setEnabled(true);
 
-        if(file_path_!=""){
-            action_save->setEnabled(true);
-        }else{
-            action_save->setEnabled(false);
-        }
+        qDebug()<<action_save;
+        action_save->setEnabled(file_path_!="");
+
 
     }else{
         action_delete_element->setEnabled(false);
         action_save->setEnabled(false);
         action_save_as -> setEnabled(false);
     }
-    if(isArray){
-        //action_new_array_element->setEnabled(true);
-        action_new_value_element->setEnabled(true);
-    }else{
-        //action_new_array_element->setEnabled(false);
-        action_new_value_element->setEnabled(false);
-    }
-    if(isObject){
-        action_new_object_element->setEnabled(true);
-    }else{
-        action_new_object_element->setEnabled(false);
-    }
+
+    action_new_value_element->setEnabled(isArray);
+
+    action_new_object_element->setEnabled(isObject);
+
+    action_new_array_element->setEnabled(isObject);
 
 }
 
@@ -479,9 +471,6 @@ void MainWindow::on_insert_object_element_triggered()
 
         QJsonObject jsonObject = saveTree(model->invisibleRootItem());
 
-        //qDebug() << selectedItem->text();
-        //qDebug() << selectedItem->data(Qt::UserRole);
-
         // Create a new dialog to get user input
         dialogInsertObject = new DialogInsertObject(this);
         dialogInsertObject->show();
@@ -502,6 +491,9 @@ void MainWindow::on_insert_object_element_triggered()
             }else if(jsonObject.empty()){
                 model->appendRow(rowItems);
             }
+
+            model->setHeaderData(0, Qt::Horizontal, QObject::tr("Key"));
+            model->setHeaderData(1, Qt::Horizontal, QObject::tr("Value"));
         }
         // Clean up the dialog
         delete dialogInsertObject;
@@ -543,42 +535,42 @@ void MainWindow::on_actionNewArrayElement_triggered()
     QJsonObject jsonObject = saveTree(model->invisibleRootItem());
 
     // Create a new dialog to get user input
-    dialogInsertArray = new DialogInsertArray(this);
-    dialogInsertArray->show();
+    dialogInsert = new DialogInsert(this);
+    dialogInsert->show();
 
-    int result = dialogInsertArray->exec();
+    int result = dialogInsert->exec();
 
     // If the user clicked OK, add the new object to the model
     if (result == QDialog::Accepted) {
 
         // Get the user's input from the dialog
-
-        if (selectedItem->data(Qt::UserRole) == "array") {
-            //TODO
-            // Get the user's input from the dialog
-                    QString value = dialogInsertArray->getString();
-
-                    if (selectedItem->data(Qt::UserRole) == "array") {
-                        QJsonArray jsonArray = jsonObject[selectedItem->text()].toArray();
-                        QJsonArray* newJsonArray = new QJsonArray();
-                        newJsonArray->append(value);
-                        jsonArray.append(*newJsonArray);
-                        qDebug()<<jsonArray;
-                        jsonObject[selectedItem->text()] = jsonArray;
-                        qDebug()<<jsonObject;
-                        // Update the model
-                        model->clear();
-                        QStandardItemModel *model_new = new QStandardItemModel();
-                        buildTree(model_new, jsonObject);
-                        model_new->setHeaderData(0, Qt::Horizontal, QObject::tr("Key"));
-                        model_new->setHeaderData(1, Qt::Horizontal, QObject::tr("Value"));
-                        ui->treeView->setModel(model_new);
-                    }
+        QString key = dialogInsert->getKey();
+        //QString value = dialogInsertObject->getValue();
+        QStandardItem *item = new QStandardItem(key);
+        item->setData("array", Qt::UserRole);
+        QList<QStandardItem*> rowItems;
+        rowItems << new QStandardItem("");
+        if(dialogInsert->isStringChecked()){
+            QString value = dialogInsert->getString();
+            rowItems << new QStandardItem(value);
+        }else{
+            double value = dialogInsert->getDouble();
+            rowItems << new QStandardItem(value);
         }
+
+
+        if (selectedItem!=nullptr && selectedItem->data(Qt::UserRole) == "object") {
+            selectedItem->appendRow(item);
+        }else if(jsonObject.empty()){
+            model->appendRow(item);
+        }
+
+        item->appendRow(rowItems);
+
     }
     // Clean up the dialog
-    delete dialogInsertArray;
-    dialogInsertArray = nullptr;
+    delete dialogInsert;
+    dialogInsert = nullptr;
 }
 
 
@@ -607,27 +599,27 @@ void MainWindow::on_actionInsertValueElement_triggered()
             // Get the user's input from the dialog
 
 
-                        QJsonArray jsonArray = jsonObject[selectedItem->text()].toArray();
-                        if(dialogInsertArray->isStringChecked()){
-                            QString value = dialogInsertArray->getString();
-                            jsonArray.append(value);
-                        }
+            QJsonArray jsonArray = jsonObject[selectedItem->text()].toArray();
+            if(dialogInsertArray->isStringChecked()){
+                QString value = dialogInsertArray->getString();
+                jsonArray.append(value);
+            }
 
-                        else{
-                            double value = dialogInsertArray->getDouble();
-                            jsonArray.append(value);
-                        }
+            else{
+                double value = dialogInsertArray->getDouble();
+                jsonArray.append(value);
+            }
 
-                        qDebug()<<jsonArray;
-                        jsonObject[selectedItem->text()] = jsonArray;
-                        qDebug()<<jsonObject;
-                        // Update the model
-                        model->clear();
-                        QStandardItemModel *model_new = new QStandardItemModel();
-                        buildTree(model_new, jsonObject);
-                        model_new->setHeaderData(0, Qt::Horizontal, QObject::tr("Key"));
-                        model_new->setHeaderData(1, Qt::Horizontal, QObject::tr("Value"));
-                        ui->treeView->setModel(model_new);
+            qDebug()<<jsonArray;
+            jsonObject[selectedItem->text()] = jsonArray;
+            qDebug()<<jsonObject;
+            // Update the model
+            model->clear();
+            QStandardItemModel *model_new = new QStandardItemModel();
+            buildTree(model_new, jsonObject);
+            model_new->setHeaderData(0, Qt::Horizontal, QObject::tr("Key"));
+            model_new->setHeaderData(1, Qt::Horizontal, QObject::tr("Value"));
+            ui->treeView->setModel(model_new);
 
         }
     }

@@ -25,9 +25,6 @@ private:
     QLineEdit* value_line;
     QRadioButton *is_string;
     QRadioButton *is_double;
-    bool is_string_pressed;
-    bool is_double_pressed;
-
 };
 
 #endif // DIALOGINSERTARRAY_H

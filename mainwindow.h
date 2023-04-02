@@ -1,5 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
+#include "dialoginsert.h"
 #include "dialoginsertarray.h"
 #include "dialoginsertobject.h"
 #include "dialogmodify.h"
@@ -73,6 +74,7 @@ private:
     DialogInsertObject *dialogInsertObject;
     DialogModify *dialogModify;
     DialogInsertArray *dialogInsertArray;
+    DialogInsert *dialogInsert;
     //void checkModelEmpty();
 
 };

@@ -7,8 +7,6 @@ DialogInsertArray::DialogInsertArray(QWidget *parent) :
 {
     ui->setupUi(this);
     value_line = ui->value;
-    is_double_pressed=false;
-    is_string_pressed=false;
     is_double = ui->double_value;
     is_string = ui->string_value;
 }

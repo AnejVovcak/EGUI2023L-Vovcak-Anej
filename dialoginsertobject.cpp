@@ -18,6 +18,7 @@ DialogInsertObject::~DialogInsertObject()
 }
 
 QString DialogInsertObject::getKey(){
+    qDebug()<<key_line->text();
     return key_line->text();
 }
 
