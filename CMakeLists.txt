@@ -29,6 +29,7 @@ set(PROJECT_SOURCES
         dialogmodify.cpp
         dialogmodify.h
         dialogmodify.ui
+        qtresource.qrc
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

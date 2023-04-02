@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/floppy_disk.png</file>
+        <file>icons/folder_out.png</file>
+        <file>icons/save_as.png</file>
+        <file>icons/document_empty.png</file>
+        <file>icons/garbage_can.png</file>
+    </qresource>
+</RCC>

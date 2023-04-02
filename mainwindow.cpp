@@ -135,28 +135,7 @@ void MainWindow::on_actionSave_triggered()
 
 void MainWindow::saveTree2(QJsonArray& jsonArr, QStandardItem* item)
 {
-    /*
-    QJsonObject jsonObject;
 
-    for(int i = 0; i<item->rowCount(); i++){
-        QStandardItem* childItem = item->child(i, 0);
-
-        if(childItem->rowCount() == 0){
-            jsonObject.insert(childItem->text(), item->child(i, 1)->text());
-        }
-        else if(childItem->data(Qt::UserRole) == "array"){
-            QJsonArray nestedArr;
-            saveTree2(nestedArr, childItem);
-            jsonObject.insert(childItem->text(), nestedArr);
-        }
-        else{
-            QJsonObject nestedObj;
-            saveTree(nestedObj, childItem);
-            jsonObject.insert(childItem->text(), nestedObj);
-        }
-
-    }
-    jsonArr.append(jsonObject);*/
     for (int j = 0; j < item->rowCount(); j++) {
         QStandardItem* subChildItem = item->child(j, 0);
 
@@ -190,14 +169,23 @@ void MainWindow::saveTree(QJsonObject& jsonObj, QStandardItem* item)
 {
     for(int i = 0; i<item->rowCount(); i++){
         QStandardItem* childItem = item->child(i, 0);
-
+        qDebug() << childItem->text();
         if(childItem->rowCount() == 0){
             jsonObj.insert(childItem->text(), item->child(i, 1)->text());
         }
-        else{
+        else if(childItem->data(Qt::UserRole).toString() == "object"){
             QJsonObject nestedObj;
             saveTree(nestedObj, childItem);
             jsonObj.insert(childItem->text(), nestedObj);
+        }else if(childItem->data(Qt::UserRole).toString() == "array"){
+            qDebug() << "got here with";
+            qDebug() << childItem->text();
+            QJsonArray nestedArr;
+            saveTree2(nestedArr,childItem);
+            //QJsonObject nestedObj;
+            qDebug()<<nestedArr;
+            jsonObj[childItem->text()] = nestedArr;
+            //nestedArr.insert(childItem->text(),nestedArr);
         }
     }
 }
@@ -206,18 +194,15 @@ void MainWindow::saveTree(QJsonObject& jsonObj, QStandardItem* item)
 QJsonObject MainWindow::saveTree(QStandardItem* item)
 {
     QJsonObject result;
-    qDebug()<<item->rowCount();
     // Iterate over all child items of the current item
     for (int i = 0; i < item->rowCount(); i++) {
         QStandardItem* childItem = item->child(i, 0);
-        qDebug() << childItem->text();
         if(childItem->rowCount() == 0 && childItem->text()!=""){
             qDebug() << "test";
             result[childItem->text()] = item->child(i, 1)->text();
         }
         // Check if the child item represents a JSON object
         else if (childItem->data(Qt::UserRole).toString() == "object") {
-            qDebug() << "test1";
             //QJsonObject childObj = saveTree(childItem);
             QJsonObject childObj;
             saveTree(childObj, childItem);
@@ -225,8 +210,9 @@ QJsonObject MainWindow::saveTree(QStandardItem* item)
         }
         // Check if the child item represents a JSON array
         else if (childItem->data(Qt::UserRole).toString() == "array") {
-            qDebug() << "test2";
             QJsonArray childArr;
+            saveTree2(childArr,childItem);
+            /*
             for (int j = 0; j < childItem->rowCount(); j++) {
                 QStandardItem* subChildItem = childItem->child(j, 0);
 
@@ -251,18 +237,14 @@ QJsonObject MainWindow::saveTree(QStandardItem* item)
                     QJsonValue jsonValue(value);
                     childArr.append(jsonValue);
                 }
-            }
+            }*/
             result[childItem->text()] = childArr;
         }
         // Otherwise, the child item represents a key-value pair
         else {
-            qDebug() << "test3";
             QString key = childItem->text();
-            qDebug() << item->child(i,1);
             //QString value = childItem->child(1, 0)->text();
             QString value = item->child(i,1)->text();
-            qDebug() << key;
-
             QJsonValue jsonValue(value);
             result[key] = jsonValue;
         }
@@ -509,8 +491,15 @@ void MainWindow::on_actionModifyElement_triggered()
 
     QModelIndex selectedIndex = treeView->currentIndex();
     QStandardItem* selectedItem = model->itemFromIndex(selectedIndex);
-
+    QString key = selectedItem->text();
     QJsonObject object = saveTree(model->invisibleRootItem());
+    qDebug() << object.find(selectedItem->text())->toVariant();
+    if (object.contains(key)) {
+        QJsonValue value = object.value(key);
+        qDebug() << "The value of" << key << "is" << value.toString();
+    } else {
+        qDebug() << "The key" << key << "does not exist in the JSON object";
+    }
     dialogModify = new DialogModify(this,&object);
     dialogModify->show();
 
@@ -566,6 +555,8 @@ void MainWindow::on_actionNewArrayElement_triggered()
         }
 
         item->appendRow(rowItems);
+        model->setHeaderData(0, Qt::Horizontal, QObject::tr("Key"));
+        model->setHeaderData(1, Qt::Horizontal, QObject::tr("Value"));
 
     }
     // Clean up the dialog
@@ -583,6 +574,11 @@ void MainWindow::on_actionInsertValueElement_triggered()
 
     QJsonObject jsonObject = saveTree(model->invisibleRootItem());
 
+    if(jsonObject.empty()){
+        QMessageBox::warning(this, "Error", "the model is empty");
+        return;
+    }
+
     // Create a new dialog to get user input
     dialogInsertArray = new DialogInsertArray(this);
     dialogInsertArray->show();
@@ -598,8 +594,9 @@ void MainWindow::on_actionInsertValueElement_triggered()
             //TODO
             // Get the user's input from the dialog
 
-
-            QJsonArray jsonArray = jsonObject[selectedItem->text()].toArray();
+            qDebug() << jsonObject.find(selectedItem->text()).value();
+            //QJsonArray jsonArray = jsonObject[selectedItem->text()].toArray();
+            QJsonArray jsonArray = jsonObject.find(selectedItem->text()).value().toArray();
             if(dialogInsertArray->isStringChecked()){
                 QString value = dialogInsertArray->getString();
                 jsonArray.append(value);
@@ -621,6 +618,9 @@ void MainWindow::on_actionInsertValueElement_triggered()
             model_new->setHeaderData(1, Qt::Horizontal, QObject::tr("Value"));
             ui->treeView->setModel(model_new);
 
+        }else{
+            QMessageBox::warning(this, "Error", "error on value insert");
+            return;
         }
     }
     // Clean up the dialog
