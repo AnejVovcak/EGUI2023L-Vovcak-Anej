@@ -617,6 +617,7 @@ void MainWindow::on_actionInsertValueElement_triggered()
             model_new->setHeaderData(0, Qt::Horizontal, QObject::tr("Key"));
             model_new->setHeaderData(1, Qt::Horizontal, QObject::tr("Value"));
             ui->treeView->setModel(model_new);
+            ui->treeView->expandAll();
 
         }else{
             QMessageBox::warning(this, "Error", "error on value insert");
@@ -627,4 +628,3 @@ void MainWindow::on_actionInsertValueElement_triggered()
     delete dialogInsertArray;
     dialogInsertArray = nullptr;
 }
-
